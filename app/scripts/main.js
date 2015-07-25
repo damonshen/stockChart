@@ -45,7 +45,7 @@
     console.log(maxDate + '\n' + minDate);
     scaleX = d3.time.scale().range([0, width]).domain([minDate, maxDate]);
     scaleY = d3.scale.linear().range([height, 0]).domain([minPrice, maxPrice]);
-    axisX = d3.svg.axis().scale(scaleX).ticks(d3.time.days, 5).tickFormat(d3.time.format('%m/%d')).orient('bottom');
+    axisX = d3.svg.axis().scale(scaleX).ticks(d3.time.days, 10).tickFormat(d3.time.format('%m/%d')).orient('bottom');
     axisY = d3.svg.axis().scale(scaleY).orient('right');
     stockGraph.append('g').attr({
       'transform': 'translate(' + margin.left + ',' + (height + margin.top) + ')'
@@ -53,6 +53,12 @@
     stockGraph.append('g').attr({
       'transform': 'translate(' + (width + margin.left) + ',' + margin.top + ')'
     }).attr('class', 'axis y').call(axisY);
+    stockGraph.selectAll('line.ticks').data(scaleX.ticks()).enter().append('line').attr('x1', function(d){
+      return margin.left + scaleX(new Date(d.toString()));
+    }).attr('x2', function(d){
+      console.log(margin.left + scaleX(new Date(d.toString())));
+      return margin.left + scaleX(new Date(d.toString()));
+    }).attr('y1', margin.top).attr('y2', margin.top + height).attr('stroke', '#ccc');
     stockGraph.selectAll('rect').data(data).enter().append('rect').attr('x', function(d){
       var offset;
       offset = 0.25 * width / data.length;
