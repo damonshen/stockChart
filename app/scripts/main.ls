@@ -23,7 +23,7 @@ stockGraph = d3.select \.stock-graph
 
 data = d3.csv \./test.csv, (error, data) ->
   parseDate = d3.time.format '%d-%b-%y' .parse
-  data = data.slice 0, 30 .map (d) ->
+  data = data.slice 0, 60 .map (d) ->
     return do
       date: parseDate(d.Date)
       open: +d.Open
@@ -51,7 +51,6 @@ data = d3.csv \./test.csv, (error, data) ->
 
   axisY = d3.svg.axis!
     .scale scaleY
-    .ticks 10
     .orient \right
 
   # draw x axis
@@ -84,7 +83,23 @@ data = d3.csv \./test.csv, (error, data) ->
       end = scaleY (max d.open, d.close)
       return start - end
     .attr \fill, (d) ->
-      return if d.open > d.close then \red else \green
+      return if d.open > d.close then \green else \red
 
+  # draw the high and low line
+  # use .stem for specific the line in the svg
+  stockGraph.selectAll \line.stem
+    .data data
+    .enter!
+    .append \line
+    .attr \x1, (d) ->
+      return margin.left + scaleX new Date d.date
+    .attr \x2, (d) ->
+      return margin.left + scaleX new Date d.date
+    .attr \y1, (d) ->
+      return margin.top + scaleY d.high
+    .attr \y2, (d) ->
+      return margin.top + scaleY d.low
+    .attr \stroke, (d) ->
+      return if d.open > d.close then \green else \red
 
 

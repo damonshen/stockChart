@@ -19,7 +19,7 @@
   data = d3.csv('./test.csv', function(error, data){
     var parseDate, maxDate, minDate, minPrice, maxPrice, scaleX, scaleY, axisX, axisY;
     parseDate = d3.time.format('%d-%b-%y').parse;
-    data = data.slice(0, 30).map(function(d){
+    data = data.slice(0, 60).map(function(d){
       return {
         date: parseDate(d.Date),
         open: +d.Open,
@@ -46,14 +46,14 @@
     scaleX = d3.time.scale().range([0, width]).domain([minDate, maxDate]);
     scaleY = d3.scale.linear().range([height, 0]).domain([minPrice, maxPrice]);
     axisX = d3.svg.axis().scale(scaleX).ticks(d3.time.days, 5).tickFormat(d3.time.format('%m/%d')).orient('bottom');
-    axisY = d3.svg.axis().scale(scaleY).ticks(10).orient('right');
+    axisY = d3.svg.axis().scale(scaleY).orient('right');
     stockGraph.append('g').attr({
       'transform': 'translate(' + margin.left + ',' + (height + margin.top) + ')'
     }).attr('class', 'axis x').call(axisX);
     stockGraph.append('g').attr({
       'transform': 'translate(' + (width + margin.left) + ',' + margin.top + ')'
     }).attr('class', 'axis y').call(axisY);
-    return stockGraph.selectAll('rect').data(data).enter().append('rect').attr('x', function(d){
+    stockGraph.selectAll('rect').data(data).enter().append('rect').attr('x', function(d){
       var offset;
       offset = 0.25 * width / data.length;
       return margin.left - offset + scaleX(new Date(d.date));
@@ -67,7 +67,18 @@
       end = scaleY(max(d.open, d.close));
       return start - end;
     }).attr('fill', function(d){
-      return d.open > d.close ? 'red' : 'green';
+      return d.open > d.close ? 'green' : 'red';
+    });
+    return stockGraph.selectAll('line.stem').data(data).enter().append('line').attr('x1', function(d){
+      return margin.left + scaleX(new Date(d.date));
+    }).attr('x2', function(d){
+      return margin.left + scaleX(new Date(d.date));
+    }).attr('y1', function(d){
+      return margin.top + scaleY(d.high);
+    }).attr('y2', function(d){
+      return margin.top + scaleY(d.low);
+    }).attr('stroke', function(d){
+      return d.open > d.close ? 'green' : 'red';
     });
   });
 }).call(this);
