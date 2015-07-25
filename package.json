@@ -2,6 +2,13 @@
   "name": "stockChart",
   "version": "0.0.1",
   "devDependencies": {
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "dependencies": {
+    "express": "^4.12.4",
+    "nib": "^1.0.3",
     "connect": "^2.14.4",
     "connect-livereload": "^0.4.0",
     "gulp": "^3.6.0",
@@ -28,11 +35,7 @@
     "gulp-plumber": "^0.6.3",
     "gulp-stylus": "^1.0.5"
   },
-  "engines": {
-    "node": ">=0.10.0"
-  },
-  "dependencies": {
-    "express": "^4.12.4",
-    "nib": "^1.0.3"
+  "script": {
+    "postinstall": "gulp build && bower install"
   }
 }
