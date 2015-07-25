@@ -45,7 +45,7 @@ data = d3.csv \./test.csv, (error, data) ->
   scaleY = d3.scale.linear!.range [height, 0] .domain [minPrice, maxPrice]
   axisX = d3.svg.axis!
     .scale scaleX
-    .ticks d3.time.days, 10
+    .ticks 10
     .tickFormat d3.time.format '%m/%d'
     .orient \bottom
 
@@ -68,7 +68,7 @@ data = d3.csv \./test.csv, (error, data) ->
 
   # draw the line of the ticks of x axis
   stockGraph.selectAll \line.ticks
-    .data scaleX.ticks! 
+    .data scaleX.ticks!
     .enter!
     .append \line
     .attr \x1, (d) ->
@@ -78,6 +78,20 @@ data = d3.csv \./test.csv, (error, data) ->
       return margin.left + scaleX new Date d.toString!
     .attr \y1, margin.top
     .attr \y2, margin.top + height
+    .attr \stroke, \#ccc
+
+
+  # draw the line of the ticks of y axis
+  stockGraph.selectAll \line.ticks
+    .data scaleY.ticks!
+    .enter!
+    .append \line
+    .attr \x1, margin.left
+    .attr \x2, margin.left + width
+    .attr \y1, (d) ->
+      return margin.top + scaleY d
+    .attr \y2, (d) ->
+      return margin.top + scaleY d
     .attr \stroke, \#ccc
 
 
