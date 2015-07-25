@@ -36,6 +36,6 @@
     "wiredep": "^1.4.3"
   },
   "script": {
-    "postinstall": "gulp build && bower install"
+    "postinstall": "bower install && gulp build"
   }
 }
