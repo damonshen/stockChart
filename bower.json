@@ -1,0 +1,10 @@
+{
+  "name": "gulpwepapp",
+  "private": true,
+  "dependencies": {
+    "modernizr": "~2.6.2",
+    "TechanJS": "andredumas/techan.js#~0.5.0",
+    "d3": "~3.5.6"
+  },
+  "devDependencies": {}
+}
