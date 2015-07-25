@@ -4,7 +4,6 @@ var connect = require('connect');
 var express = require('express');
 
 var app = express()
-  .use(require('connect-livereload')({ port: 35729 }))
   .use(connect.static('app'))
   .use(connect.static('.tmp'))
   .use(connect.directory('app'))
