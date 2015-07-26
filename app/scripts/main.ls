@@ -1,10 +1,11 @@
 margin = do
-  top: 80
+  top: 40
   right: 80
-  bottom: 80
+  bottom: 40
   left: 80
 height = 500 - margin.left - margin.right
 width = 960 - margin.top- margin.right
+textBlockWidth = width / 8
 
 
 max = (v1, v2) ->
@@ -12,6 +13,12 @@ max = (v1, v2) ->
 min = (v1, v2) ->
   return if v1 < v2 then v1 else v2
 
+# append a svg for showing the stock information
+stockInfo = d3.select \.stock-graph
+  .append \svg
+  .attr "width", width + margin.left + margin.right
+  .attr "height", 50
+  .attr \class, \stock-info
 
 # append a svg for drawing stock chart
 stockGraph = d3.select \.stock-graph
@@ -20,6 +27,74 @@ stockGraph = d3.select \.stock-graph
   .attr "height", height + margin.top + margin.bottom
   .attr \class, \graph
 
+intializeStockInfo = (textSvg)->
+
+  textSvg.append \text
+    .attr \class, \text-info
+    .attr \x, margin.left
+    .attr \y, 30
+    .text \Open:
+
+  textSvg.append \text
+    .attr \class, 'open'
+    .attr \x, margin.left + 1 * textBlockWidth
+    .attr \y, 30
+
+  textSvg.append \text
+    .attr \class, \text-info
+    .attr \x, margin.left + 2 * textBlockWidth
+    .attr \y, 30
+    .text \High:
+
+  textSvg.append \text
+    .attr \class, 'high'
+    .attr \x, margin.left + 3 * textBlockWidth
+    .attr \y, 30
+
+  textSvg.append \text
+    .attr \class, \text-info
+    .attr \x, margin.left + 4 * textBlockWidth
+    .attr \y, 30
+    .text \Low:
+
+  textSvg.append \text
+    .attr \class, 'low'
+    .attr \x, margin.left + 5 * textBlockWidth
+    .attr \y, 30
+
+  textSvg.append \text
+    .attr \class, \text-info
+    .attr \x, margin.left + 6 * textBlockWidth
+    .attr \y, 30
+    .text \Close:
+
+  textSvg.append \text
+    .attr \class, 'close'
+    .attr \x, margin.left + 7 * textBlockWidth
+    .attr \y, 30
+
+showStockPrice = (d, textSvg) ->
+  color = if d.open < d.close then \red else \green
+
+  textSvg.select \text.open
+    .attr \fill, color
+    .text d.open
+
+  textSvg.select \text.high
+    .attr \fill, color
+    .text d.high
+
+  textSvg.select \text.low
+    .attr \fill, color
+    .text d.low
+
+  textSvg.select \text.close
+    .attr \fill, color
+    .text d.close
+
+
+
+intializeStockInfo stockInfo
 
 data = d3.csv \./test.csv, (error, data) ->
   parseDate = d3.time.format '%d-%b-%y' .parse
@@ -32,6 +107,8 @@ data = d3.csv \./test.csv, (error, data) ->
       close: +d.Close
       volume: +d.Volume
   console.log data
+
+
   maxDate = d3.max data, (d) ->
     d.date
   minDate = d3.min data, (d) ->
@@ -41,6 +118,8 @@ data = d3.csv \./test.csv, (error, data) ->
   maxPrice = d3.max data, (d) ->
     d.high
   console.log maxDate + '\n' + minDate
+
+
   scaleX = d3.time.scale!.range [0, width] .domain [minDate, maxDate]
   scaleY = d3.scale.linear!.range [height, 0] .domain [minPrice, maxPrice]
   axisX = d3.svg.axis!
@@ -74,7 +153,6 @@ data = d3.csv \./test.csv, (error, data) ->
     .attr \x1, (d) ->
       return margin.left + scaleX new Date d.toString!
     .attr \x2, (d) ->
-      console.log margin.left + scaleX new Date d.toString!
       return margin.left + scaleX new Date d.toString!
     .attr \y1, margin.top
     .attr \y2, margin.top + height
@@ -111,6 +189,8 @@ data = d3.csv \./test.csv, (error, data) ->
       start = scaleY (min d.open, d.close)
       end = scaleY (max d.open, d.close)
       return start - end
+    .on \mouseover, (d) ->
+      showStockPrice d, stockInfo
     .attr \fill, (d) ->
       return if d.open > d.close then \green else \red
 
