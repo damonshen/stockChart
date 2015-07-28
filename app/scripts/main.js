@@ -38,9 +38,9 @@
   };
   intializeStockInfo(stockInfo);
   data = d3.csv('./test.csv', function(error, data){
-    var parseDate, maxDate, minDate, minPrice, maxPrice, scaleX, scaleY, axisX, axisY;
+    var parseDate, maxDate, minDate, minPrice, maxPrice, xRange, res$, i$, step$, to$, ridx$, scaleX, scaleY, axisX, axisY;
     parseDate = d3.time.format('%d-%b-%y').parse;
-    data = data.slice(0, 60).map(function(d){
+    data = data.slice(0, 80).map(function(d){
       return {
         date: parseDate(d.Date),
         open: +d.Open,
@@ -64,9 +64,27 @@
       return d.high;
     });
     console.log(maxDate + '\n' + minDate);
-    scaleX = d3.time.scale().range([0, width]).domain([minDate, maxDate]);
+    data.sort(function(a, b){
+      var dateA, dateB;
+      dateA = new Date(a.date);
+      dateB = new Date(b.date);
+      return dateA - dateB;
+    });
+    res$ = [];
+    for (i$ = 0, to$ = width, step$ = width / (data.length - 1); step$ < 0 ? i$ >= to$ : i$ <= to$; i$ += step$) {
+      ridx$ = i$;
+      res$.push(ridx$);
+    }
+    xRange = res$;
+    if (xRange.length < data.length) {
+      xRange.push(width);
+    }
+    console.log(xRange.length);
+    scaleX = d3.time.scale().range(xRange).domain(data.map(function(d){
+      return new Date(d.date);
+    }));
     scaleY = d3.scale.linear().range([height, 0]).domain([minPrice, maxPrice]);
-    axisX = d3.svg.axis().scale(scaleX).ticks(10).tickFormat(d3.time.format('%m/%d')).orient('bottom');
+    axisX = d3.svg.axis().scale(scaleX).ticks(5).tickFormat(d3.time.format('%m/%d')).orient('bottom');
     axisY = d3.svg.axis().scale(scaleY).orient('right');
     stockGraph.append('g').attr({
       'transform': 'translate(' + margin.left + ',' + (height + margin.top) + ')'
@@ -74,12 +92,12 @@
     stockGraph.append('g').attr({
       'transform': 'translate(' + (width + margin.left) + ',' + margin.top + ')'
     }).attr('class', 'axis y').call(axisY);
-    stockGraph.selectAll('line.ticks').data(scaleX.ticks()).enter().append('line').attr('x1', function(d){
+    stockGraph.selectAll('line.xticks').data(scaleX.ticks(5)).enter().append('line').attr('x1', function(d){
       return margin.left + scaleX(new Date(d.toString()));
     }).attr('x2', function(d){
       return margin.left + scaleX(new Date(d.toString()));
     }).attr('y1', margin.top).attr('y2', margin.top + height).attr('stroke', '#ccc');
-    stockGraph.selectAll('line.ticks').data(scaleY.ticks()).enter().append('line').attr('x1', margin.left).attr('x2', margin.left + width).attr('y1', function(d){
+    stockGraph.selectAll('line.yticks').data(scaleY.ticks()).enter().append('line').attr('x1', margin.left).attr('x2', margin.left + width).attr('y1', function(d){
       return margin.top + scaleY(d);
     }).attr('y2', function(d){
       return margin.top + scaleY(d);
@@ -112,6 +130,29 @@
       return margin.top + scaleY(d.low);
     }).attr('stroke', function(d){
       return d.open > d.close ? 'green' : 'red';
+    }).on('mouseover', function(d){
+      return showStockPrice(d, stockInfo);
     });
   });
+  /*
+    # zoom construct
+    zoom = d3.behavior.zoom!
+      .on \zoom, draw
+  
+    # add a rect on the graph for detect zoomimg
+    stockGraph.append \rect
+      .attr \class, \pane
+      .attr \width, width + 2 * margin.left
+      .attr \height, height + margin.top + margin.bottom
+      .call zoom
+  
+    zoom.x scaleX
+    draw!
+  
+    # redraw the graph when zooming
+    draw = ->
+      console.log \zoom
+      stockGraph.select \.x.axis .call axisX
+      stockGraph.select \.y.axis .call axisY
+  */
 }).call(this);

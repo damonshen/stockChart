@@ -98,7 +98,7 @@ intializeStockInfo stockInfo
 
 data = d3.csv \./test.csv, (error, data) ->
   parseDate = d3.time.format '%d-%b-%y' .parse
-  data = data.slice 0, 60 .map (d) ->
+  data = data.slice 0, 80 .map (d) ->
     return do
       date: parseDate(d.Date)
       open: +d.Open
@@ -119,12 +119,25 @@ data = d3.csv \./test.csv, (error, data) ->
     d.high
   console.log maxDate + '\n' + minDate
 
+  data.sort (a, b) ->
+    dateA = new Date a.date
+    dateB = new Date b.date
+    return dateA - dateB
 
-  scaleX = d3.time.scale!.range [0, width] .domain [minDate, maxDate]
+  xRange = [0 to width by width / (data.length - 1)]
+  if xRange.length < data.length
+    xRange.push width
+
+  console.log xRange.length
+
+  scaleX = d3.time.scale!
+    .range xRange
+    .domain data.map (d) ->
+      new Date d.date
   scaleY = d3.scale.linear!.range [height, 0] .domain [minPrice, maxPrice]
   axisX = d3.svg.axis!
     .scale scaleX
-    .ticks 10
+    .ticks 5
     .tickFormat d3.time.format '%m/%d'
     .orient \bottom
 
@@ -146,8 +159,8 @@ data = d3.csv \./test.csv, (error, data) ->
     .call axisY
 
   # draw the line of the ticks of x axis
-  stockGraph.selectAll \line.ticks
-    .data scaleX.ticks!
+  stockGraph.selectAll \line.xticks
+    .data scaleX.ticks 5
     .enter!
     .append \line
     .attr \x1, (d) ->
@@ -160,7 +173,7 @@ data = d3.csv \./test.csv, (error, data) ->
 
 
   # draw the line of the ticks of y axis
-  stockGraph.selectAll \line.ticks
+  stockGraph.selectAll \line.yticks
     .data scaleY.ticks!
     .enter!
     .append \line
@@ -210,5 +223,27 @@ data = d3.csv \./test.csv, (error, data) ->
       return margin.top + scaleY d.low
     .attr \stroke, (d) ->
       return if d.open > d.close then \green else \red
+    .on \mouseover, (d) ->
+      showStockPrice d, stockInfo
 
+/*
+  # zoom construct
+  zoom = d3.behavior.zoom!
+    .on \zoom, draw
 
+  # add a rect on the graph for detect zoomimg
+  stockGraph.append \rect
+    .attr \class, \pane
+    .attr \width, width + 2 * margin.left
+    .attr \height, height + margin.top + margin.bottom
+    .call zoom
+
+  zoom.x scaleX
+  draw!
+
+  # redraw the graph when zooming
+  draw = ->
+    console.log \zoom
+    stockGraph.select \.x.axis .call axisX
+    stockGraph.select \.y.axis .call axisY
+*/
