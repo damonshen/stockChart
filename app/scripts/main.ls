@@ -20,12 +20,6 @@ stockInfo = d3.select \.stock-graph
   .attr "height", 50
   .attr \class, \stock-info
 
-# append a svg for drawing stock chart
-stockGraph = d3.select \.stock-graph
-  .append \svg
-  .attr "width", width + margin.left + margin.right
-  .attr "height", height + margin.top + margin.bottom
-  .attr \class, \graph
 
 intializeStockInfo = (textSvg)->
 
@@ -135,6 +129,7 @@ data = d3.csv \./test.csv, (error, data) ->
     .domain data.map (d) ->
       new Date d.date
   scaleY = d3.scale.linear!.range [height, 0] .domain [minPrice, maxPrice]
+
   axisX = d3.svg.axis!
     .scale scaleX
     .ticks 5
@@ -145,12 +140,34 @@ data = d3.csv \./test.csv, (error, data) ->
     .scale scaleY
     .orient \right
 
+  draw = ->
+    console.log \zoom
+    stockGraph.select \.axis.x .call axisX
+    stockGraph.select \.axis.y .call axisY
+    stockGraph.select \.axis.y .call axisY
+
+  zoom = d3.behavior.zoom!
+    .x scaleX
+    .y scaleY
+    .scaleExtent [0.5, 1]
+    .on \zoom, draw
+
+  # append a svg for drawing stock chart
+  stockGraph = d3.select \.stock-graph
+    .append \svg
+    .attr "width", width + margin.left + margin.right
+    .attr "height", height + margin.top + margin.bottom
+    .attr \class, \graph
+    .append("g")
+    .call zoom
+
   # draw x axis
   stockGraph.append \g
     .attr do
       'transform': 'translate(' + margin.left + \, + (height + margin.top) + \)
     .attr \class, 'axis x'
     .call axisX
+
   # draw y axis
   stockGraph.append \g
     .attr do
@@ -226,7 +243,7 @@ data = d3.csv \./test.csv, (error, data) ->
     .on \mouseover, (d) ->
       showStockPrice d, stockInfo
 
-/*
+  /*
   # zoom construct
   zoom = d3.behavior.zoom!
     .on \zoom, draw
@@ -240,10 +257,5 @@ data = d3.csv \./test.csv, (error, data) ->
 
   zoom.x scaleX
   draw!
-
+  */
   # redraw the graph when zooming
-  draw = ->
-    console.log \zoom
-    stockGraph.select \.x.axis .call axisX
-    stockGraph.select \.y.axis .call axisY
-*/
