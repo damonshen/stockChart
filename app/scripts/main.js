@@ -37,7 +37,7 @@
   };
   intializeStockInfo(stockInfo);
   data = d3.csv('./test.csv', function(error, data){
-    var parseDate, maxDate, minDate, minPrice, maxPrice, xRange, res$, i$, step$, to$, ridx$, scaleX, scaleY, axisX, axisY, draw, zoom, stockGraph;
+    var parseDate, maxDate, minDate, minPrice, maxPrice, xRange, res$, i$, step$, to$, ridx$, scaleX, scaleY, axisX, axisY, stockGraph, xticks, yticks, draw, zoom;
     parseDate = d3.time.format('%d-%b-%y').parse;
     data = data.slice(0, 80).map(function(d){
       return {
@@ -85,26 +85,19 @@
     scaleY = d3.scale.linear().range([height, 0]).domain([minPrice, maxPrice]);
     axisX = d3.svg.axis().scale(scaleX).ticks(5).tickFormat(d3.time.format('%m/%d')).orient('bottom');
     axisY = d3.svg.axis().scale(scaleY).orient('right');
-    draw = function(){
-      console.log('zoom');
-      stockGraph.select('.axis.x').call(axisX);
-      stockGraph.select('.axis.y').call(axisY);
-      return stockGraph.select('.axis.y').call(axisY);
-    };
-    zoom = d3.behavior.zoom().x(scaleX).y(scaleY).scaleExtent([0.5, 1]).on('zoom', draw);
-    stockGraph = d3.select('.stock-graph').append('svg').attr("width", width + margin.left + margin.right).attr("height", height + margin.top + margin.bottom).attr('class', 'graph').append("g").call(zoom);
+    stockGraph = d3.select('.stock-graph').append('svg').attr("width", width + margin.left + margin.right).attr("height", height + margin.top + margin.bottom).attr('class', 'graph').append("g");
     stockGraph.append('g').attr({
       'transform': 'translate(' + margin.left + ',' + (height + margin.top) + ')'
     }).attr('class', 'axis x').call(axisX);
     stockGraph.append('g').attr({
       'transform': 'translate(' + (width + margin.left) + ',' + margin.top + ')'
     }).attr('class', 'axis y').call(axisY);
-    stockGraph.selectAll('line.xticks').data(scaleX.ticks(5)).enter().append('line').attr('x1', function(d){
+    xticks = stockGraph.selectAll('line.xticks').data(scaleX.ticks(5)).enter().append('line').attr('x1', function(d){
       return margin.left + scaleX(new Date(d.toString()));
     }).attr('x2', function(d){
       return margin.left + scaleX(new Date(d.toString()));
     }).attr('y1', margin.top).attr('y2', margin.top + height).attr('stroke', '#ccc');
-    stockGraph.selectAll('line.yticks').data(scaleY.ticks()).enter().append('line').attr('x1', margin.left).attr('x2', margin.left + width).attr('y1', function(d){
+    yticks = stockGraph.selectAll('line.yticks').data(scaleY.ticks()).enter().append('line').attr('x1', margin.left).attr('x2', margin.left + width).attr('y1', function(d){
       return margin.top + scaleY(d);
     }).attr('y2', function(d){
       return margin.top + scaleY(d);
@@ -127,7 +120,7 @@
     }).attr('fill', function(d){
       return d.open > d.close ? 'green' : 'red';
     });
-    return stockGraph.selectAll('line.stem').data(data).enter().append('line').attr('x1', function(d){
+    stockGraph.selectAll('line.stem').data(data).enter().append('line').attr('x1', function(d){
       return margin.left + scaleX(new Date(d.date));
     }).attr('x2', function(d){
       return margin.left + scaleX(new Date(d.date));
@@ -140,5 +133,13 @@
     }).on('mouseover', function(d){
       return showStockPrice(d, stockInfo);
     });
+    draw = function(){
+      console.log('zoom');
+      stockGraph.select('.axis.x').call(axisX);
+      stockGraph.select('.axis.y').call(axisY);
+      return stockGraph.select('line').attr('d', xticks);
+    };
+    zoom = d3.behavior.zoom().x(scaleX).y(scaleY).scaleExtent([0.5, 1]).on('zoom', draw);
+    return stockGraph.call(zoom);
   });
 }).call(this);

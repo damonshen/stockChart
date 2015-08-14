@@ -140,17 +140,6 @@ data = d3.csv \./test.csv, (error, data) ->
     .scale scaleY
     .orient \right
 
-  draw = ->
-    console.log \zoom
-    stockGraph.select \.axis.x .call axisX
-    stockGraph.select \.axis.y .call axisY
-    stockGraph.select \.axis.y .call axisY
-
-  zoom = d3.behavior.zoom!
-    .x scaleX
-    .y scaleY
-    .scaleExtent [0.5, 1]
-    .on \zoom, draw
 
   # append a svg for drawing stock chart
   stockGraph = d3.select \.stock-graph
@@ -159,7 +148,6 @@ data = d3.csv \./test.csv, (error, data) ->
     .attr "height", height + margin.top + margin.bottom
     .attr \class, \graph
     .append("g")
-    .call zoom
 
   # draw x axis
   stockGraph.append \g
@@ -176,7 +164,7 @@ data = d3.csv \./test.csv, (error, data) ->
     .call axisY
 
   # draw the line of the ticks of x axis
-  stockGraph.selectAll \line.xticks
+  xticks = stockGraph.selectAll \line.xticks
     .data scaleX.ticks 5
     .enter!
     .append \line
@@ -190,7 +178,7 @@ data = d3.csv \./test.csv, (error, data) ->
 
 
   # draw the line of the ticks of y axis
-  stockGraph.selectAll \line.yticks
+  yticks = stockGraph.selectAll \line.yticks
     .data scaleY.ticks!
     .enter!
     .append \line
@@ -243,6 +231,19 @@ data = d3.csv \./test.csv, (error, data) ->
     .on \mouseover, (d) ->
       showStockPrice d, stockInfo
 
+  draw = ->
+    console.log \zoom
+    stockGraph.select \.axis.x .call axisX
+    stockGraph.select \.axis.y .call axisY
+    stockGraph.select \line .attr \d, xticks
+
+  zoom = d3.behavior.zoom!
+    .x scaleX
+    .y scaleY
+    .scaleExtent [0.5, 1]
+    .on \zoom, draw
+
+  stockGraph.call zoom
   /*
   # zoom construct
   zoom = d3.behavior.zoom!
